@@ -41,6 +41,8 @@
     .cell { min-height:115px; padding:8px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
     .cell:nth-child(8n) { border-right:0; }
     .head { min-height:53px; display:grid; place-items:center; color:#e0ebff; background:var(--panel2); font-size:12px; font-weight:800; }
+    .day-label { display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.15; }
+    .day-label .date { color:var(--cyan); font-size:10px; font-weight:600; opacity:.92; }
     .period { display:flex; flex-direction:column; justify-content:center; color:#c0cee9; background:rgba(18,38,74,.56); }
     .period strong { font-size:12px; }
     .period span { margin-top:5px; color:var(--muted); font-size:10px; }
@@ -80,6 +82,7 @@
     'use strict';
     const DATA = {"title":"燕京理工学院 软件2506 班级课表","term":"2026—2027 学年第一学期","classSize":30,"days":["星期一","星期二","星期三","星期四","星期五","星期六","星期天"],"periods":[{"name":"第一大节","sections":"01—02节"},{"name":"第二大节","sections":"03—04节"},{"name":"第三大节","sections":"05—06节"},{"name":"第四大节","sections":"07—08节"},{"name":"第五大节","sections":"09—10节"},{"name":"第六大节","sections":"11—12节"}],"schedule":[{"name":"大学英语AⅢ","type":"必修","weeks":[1,3,5,7,9,11,13,15],"sections":"03-04节","placement":"A504（语音室7）","day":0,"period":1,"room":"A504（语音室7）"},{"name":"Web前端框架技术","type":"必修","weeks":[5,7,8,9,10,11,12,13,14,15,16,17],"sections":"05-06节","placement":"K2-412","day":0,"period":2,"room":"K2-412"},{"name":"计算机网络A","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11,12],"sections":"09-10节","placement":"K2-316","day":0,"period":4,"room":"K2-316"},{"name":"Web前端框架技术","type":"必修","weeks":[5,7,8,9,10,11,12,13,14,15,16,17],"sections":"03-04节","placement":"A211（计算机实训室）","day":1,"period":1,"room":"A211（计算机实训室）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[16],"sections":"05-06节","placement":"实201西（力学实验室1）","day":1,"period":2,"room":"实201西（力学实验室1）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[17],"sections":"05-06节","placement":"实206西（光学实验室）","day":1,"period":2,"room":"实206西（光学实验室）"},{"name":"大学物理B","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"07-08节","placement":"K2-512","day":1,"period":3,"room":"K2-512"},{"name":"操作系统","type":"必修","weeks":[12,13,14,15],"sections":"07-08节","placement":"A111（公共机房2）","day":1,"period":3,"room":"A111（公共机房2）"},{"name":"计算机网络A","type":"实验学时 · 必修","weeks":[5,7,8,9,10,11,12,13],"sections":"11-12节","placement":"A207（网络综合实训室）","day":1,"period":5,"room":"A207（网络综合实训室）"},{"name":"大学物理B","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"03-04节","placement":"K2-112","day":2,"period":1,"room":"K2-112"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[13],"sections":"03-04节","placement":"实203西（力学实验室3）","day":2,"period":1,"room":"实203西（力学实验室3）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[15],"sections":"03-04节","placement":"实207西（热学实验室）","day":2,"period":1,"room":"实207西（热学实验室）"},{"name":"操作系统","type":"必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"09-10节","placement":"C303","day":2,"period":4,"room":"C303"},{"name":"马克思主义基本原理概论","type":"必修","weeks":[14,15,16,17],"sections":"09-10节","placement":"K2-302","day":2,"period":4,"room":"K2-302"},{"name":"创新创业教育","type":"必修","weeks":[1,2,3,4,5,7,8,9],"sections":"11-12节","placement":"C201","day":2,"period":5,"room":"C201"},{"name":"线性代数","type":"必修","weeks":[1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17],"sections":"03-04节","placement":"D304","day":3,"period":1,"room":"D304"},{"name":"马克思主义基本原理概论","type":"必修","weeks":[1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17],"sections":"07-08节","placement":"K2-302","day":3,"period":3,"room":"K2-302"},{"name":"人工智能基础技术及应用","type":"通识限选","weeks":[14,15,16,17],"sections":"09-10节","placement":"M201","day":3,"period":4,"room":"M201"},{"name":"人工智能基础技术及应用","type":"通识限选","weeks":[14,15,16,17],"sections":"11-12节","placement":"A411（公共机房6）","day":3,"period":5,"room":"A411（公共机房6）"}],"weekCounts":{"1":8,"2":7,"3":8,"4":7,"5":9,"6":2,"7":11,"8":10,"9":11,"10":9,"11":10,"12":7,"13":8,"14":8,"15":10,"16":8,"17":8}};
     const colors = ['#5de9ff','#70f5c4','#6aa8ff','#b99cff','#ffd36a','#ff91b0'];
+    const WEEK_ONE_MONDAY = '2026-08-31';
     let selectedWeek = Math.max(1, Math.min(17, Number(new URLSearchParams(location.search).get('week')) || 1));
     const tabs = document.getElementById('weekTabs');
     const grid = document.getElementById('grid');
@@ -103,7 +106,15 @@
       weekTitle.textContent = `第${selectedWeek}周课表`;
       weekHint.textContent = count ? `本周共有 ${count} 个课程安排` : '本周暂无课程安排';
       summary.innerHTML = `当前查看：<b>第${selectedWeek}周</b>　·　只显示本周课程`;
-      let html = '<div class="cell head">节次 / 星期</div>' + DATA.days.map(day => `<div class="cell head">${day}</div>`).join('');
+      const weekStart = new Date(`${WEEK_ONE_MONDAY}T00:00:00Z`);
+      weekStart.setUTCDate(weekStart.getUTCDate() + (selectedWeek - 1) * 7);
+      const dayHeaders = DATA.days.map((day, index) => {
+        const date = new Date(weekStart);
+        date.setUTCDate(date.getUTCDate() + index);
+        const dateText = `${date.getUTCFullYear()}.${String(date.getUTCMonth() + 1).padStart(2, '0')}.${String(date.getUTCDate()).padStart(2, '0')}`;
+        return `<div class="cell head"><span class="day-label"><span>${day}</span><small class="date">${dateText}</small></span></div>`;
+      }).join('');
+      let html = '<div class="cell head">节次 / 星期</div>' + dayHeaders;
       DATA.periods.forEach((period, index) => {
         html += `<div class="cell period"><strong>${period.name}</strong><span>${period.sections}</span></div>`;
         DATA.days.forEach((_, day) => {
