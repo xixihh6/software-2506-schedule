@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#081329">
+  <title>软件2506 · 分周课表</title>
+  <style>
+    :root { --bg:#071021; --panel:#0e1b35; --panel2:#12264a; --line:rgba(142,174,238,.16); --text:#edf4ff; --muted:#91a5ca; --cyan:#5de9ff; --mint:#70f5c4; --gold:#ffd36a; --purple:#b99cff; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; }
+    body { color:var(--text); font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif; background:radial-gradient(circle at 8% 0%,rgba(62,112,220,.25),transparent 30rem),radial-gradient(circle at 96% 80%,rgba(126,70,194,.19),transparent 28rem),var(--bg); }
+    button { font:inherit; }
+    .shell { width:min(1380px,calc(100% - 24px)); margin:auto; padding:24px 0 42px; }
+    .header { display:flex; justify-content:space-between; align-items:end; gap:20px; margin-bottom:16px; }
+    .eyebrow { color:var(--cyan); font-size:11px; font-weight:800; letter-spacing:.22em; }
+    h1 { margin:8px 0; font-size:clamp(27px,5vw,44px); letter-spacing:-.07em; line-height:1.05; }
+    .subtitle { color:var(--muted); font-size:13px; }
+    .meta { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .badge { padding:8px 11px; border:1px solid var(--line); border-radius:10px; color:#c9d7f8; background:rgba(255,255,255,.045); font-size:11px; }
+    .badge strong { color:var(--gold); }
+    .notice { padding:12px 14px; margin-bottom:14px; border:1px solid rgba(93,233,255,.2); border-radius:13px; color:#c6eaf1; background:rgba(93,233,255,.055); font-size:12px; line-height:1.65; }
+    .notice b { color:var(--cyan); }
+    .week-bar { padding:13px; border:1px solid var(--line); border-radius:15px; background:rgba(9,19,40,.76); }
+    .week-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+    .week-heading strong { font-size:15px; }
+    .week-heading span { color:var(--muted); font-size:11px; }
+    .week-tabs { display:flex; gap:7px; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin; }
+    .week-tab { min-width:65px; padding:9px 9px; border:1px solid var(--line); border-radius:9px; color:var(--muted); background:rgba(255,255,255,.035); cursor:pointer; font-size:11px; white-space:nowrap; transition:.18s ease; }
+    .week-tab:hover { border-color:rgba(93,233,255,.55); color:var(--text); }
+    .week-tab.active { color:#06111d; border-color:transparent; background:linear-gradient(110deg,var(--cyan),var(--mint)); font-weight:800; box-shadow:0 7px 20px rgba(93,233,255,.13); }
+    .week-tab small { display:block; margin-top:3px; opacity:.7; font-size:9px; }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:14px 0 10px; }
+    .week-summary { color:var(--muted); font-size:12px; }
+    .week-summary b { color:var(--text); }
+    .nav-buttons { display:flex; gap:7px; }
+    .nav-buttons button { padding:8px 11px; border:1px solid var(--line); border-radius:8px; color:#c8d6f6; background:rgba(255,255,255,.045); cursor:pointer; font-size:11px; }
+    .nav-buttons button:hover { border-color:rgba(93,233,255,.5); }
+    .calendar { overflow:auto; border:1px solid var(--line); border-radius:15px; background:rgba(7,15,32,.58); }
+    .grid { min-width:1040px; display:grid; grid-template-columns:112px repeat(7,minmax(132px,1fr)); }
+    .cell { min-height:115px; padding:8px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .cell:nth-child(8n) { border-right:0; }
+    .head { min-height:53px; display:grid; place-items:center; color:#e0ebff; background:var(--panel2); font-size:12px; font-weight:800; }
+    .period { display:flex; flex-direction:column; justify-content:center; color:#c0cee9; background:rgba(18,38,74,.56); }
+    .period strong { font-size:12px; }
+    .period span { margin-top:5px; color:var(--muted); font-size:10px; }
+    .course { position:relative; overflow:hidden; margin-bottom:6px; padding:8px 8px 8px 11px; border-left:3px solid var(--course-color,var(--cyan)); border-radius:8px; background:rgba(255,255,255,.065); }
+    .course:last-child { margin-bottom:0; }
+    .course b { display:block; color:#f2f7ff; font-size:11px; line-height:1.45; }
+    .course small { display:block; margin-top:4px; color:#b4c3e1; font-size:9px; line-height:1.45; }
+    .course .tag { display:inline-block; margin-top:5px; padding:2px 5px; border-radius:4px; color:#a9c5ef; background:rgba(106,168,255,.11); font-size:8px; }
+    .empty { min-height:98px; display:grid; place-items:center; color:#52678f; font-size:11px; }
+    .footer { margin-top:13px; color:#64789e; font-size:11px; line-height:1.7; }
+    @media(max-width:700px) {
+      .shell { width:calc(100% - 16px); padding-top:17px; }
+      .header { display:block; }
+      .meta { justify-content:flex-start; margin-top:13px; }
+      .toolbar { align-items:flex-start; flex-direction:column; }
+      .week-heading { align-items:flex-start; flex-direction:column; gap:5px; }
+      .week-tab { min-width:60px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="header">
+      <div>
+        <div class="eyebrow">YANJING INSTITUTE OF TECHNOLOGY // WEEKLY SCHEDULE</div>
+        <h1>软件2506 · 分周课表</h1>
+        <div class="subtitle">2026—2027 学年第一学期 · 来源：Sheet2 · 每次只显示一周课程</div>
+      </div>
+      <div class="meta"><div class="badge">班级人数：<strong>30</strong></div><div class="badge">教学周：<strong>1—17周</strong></div></div>
+    </header>
+    <section class="week-bar"><div class="week-heading"><strong id="weekTitle">第1周课表</strong><span id="weekHint">正在读取本周安排</span></div><nav class="week-tabs" id="weekTabs" aria-label="教学周选择"></nav></section>
+    <div class="toolbar"><div class="week-summary" id="summary"></div><div class="nav-buttons"><button id="prevWeek">← 上一周</button><button id="nextWeek">下一周 →</button></div></div>
+    <section class="calendar"><div class="grid" id="grid"></div></section>
+    <footer class="footer">课程信息根据上传的《班级课表 (2).xls》Sheet2 整理。周次已经拆开显示；体育Ⅲ的多个项目和场地可点击课程卡查看。</footer>
+  </main>
+  <script>
+    'use strict';
+    const DATA = {"title":"燕京理工学院 软件2506 班级课表","term":"2026—2027 学年第一学期","classSize":30,"days":["星期一","星期二","星期三","星期四","星期五","星期六","星期天"],"periods":[{"name":"第一大节","sections":"01—02节"},{"name":"第二大节","sections":"03—04节"},{"name":"第三大节","sections":"05—06节"},{"name":"第四大节","sections":"07—08节"},{"name":"第五大节","sections":"09—10节"},{"name":"第六大节","sections":"11—12节"}],"schedule":[{"name":"大学英语AⅢ","type":"必修","weeks":[1,3,5,7,9,11,13,15],"sections":"03-04节","placement":"A504（语音室7）","day":0,"period":1,"room":"A504（语音室7）"},{"name":"Web前端框架技术","type":"必修","weeks":[5,7,8,9,10,11,12,13,14,15,16,17],"sections":"05-06节","placement":"K2-412","day":0,"period":2,"room":"K2-412"},{"name":"计算机网络A","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11,12],"sections":"09-10节","placement":"K2-316","day":0,"period":4,"room":"K2-316"},{"name":"Web前端框架技术","type":"必修","weeks":[5,7,8,9,10,11,12,13,14,15,16,17],"sections":"03-04节","placement":"A211（计算机实训室）","day":1,"period":1,"room":"A211（计算机实训室）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[16],"sections":"05-06节","placement":"实201西（力学实验室1）","day":1,"period":2,"room":"实201西（力学实验室1）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[17],"sections":"05-06节","placement":"实206西（光学实验室）","day":1,"period":2,"room":"实206西（光学实验室）"},{"name":"大学物理B","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"07-08节","placement":"K2-512","day":1,"period":3,"room":"K2-512"},{"name":"操作系统","type":"必修","weeks":[12,13,14,15],"sections":"07-08节","placement":"A111（公共机房2）","day":1,"period":3,"room":"A111（公共机房2）"},{"name":"计算机网络A","type":"实验学时 · 必修","weeks":[5,7,8,9,10,11,12,13],"sections":"11-12节","placement":"A207（网络综合实训室）","day":1,"period":5,"room":"A207（网络综合实训室）"},{"name":"大学物理B","type":"讲课学时 · 必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"03-04节","placement":"K2-112","day":2,"period":1,"room":"K2-112"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[13],"sections":"03-04节","placement":"实203西（力学实验室3）","day":2,"period":1,"room":"实203西（力学实验室3）"},{"name":"大学物理B","type":"实践学时 · 必修","weeks":[15],"sections":"03-04节","placement":"实207西（热学实验室）","day":2,"period":1,"room":"实207西（热学实验室）"},{"name":"操作系统","type":"必修","weeks":[1,2,3,4,5,7,8,9,10,11],"sections":"09-10节","placement":"C303","day":2,"period":4,"room":"C303"},{"name":"马克思主义基本原理概论","type":"必修","weeks":[14,15,16,17],"sections":"09-10节","placement":"K2-302","day":2,"period":4,"room":"K2-302"},{"name":"创新创业教育","type":"必修","weeks":[1,2,3,4,5,7,8,9],"sections":"11-12节","placement":"C201","day":2,"period":5,"room":"C201"},{"name":"线性代数","type":"必修","weeks":[1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17],"sections":"03-04节","placement":"D304","day":3,"period":1,"room":"D304"},{"name":"马克思主义基本原理概论","type":"必修","weeks":[1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17],"sections":"07-08节","placement":"K2-302","day":3,"period":3,"room":"K2-302"},{"name":"人工智能基础技术及应用","type":"通识限选","weeks":[14,15,16,17],"sections":"09-10节","placement":"M201","day":3,"period":4,"room":"M201"},{"name":"人工智能基础技术及应用","type":"通识限选","weeks":[14,15,16,17],"sections":"11-12节","placement":"A411（公共机房6）","day":3,"period":5,"room":"A411（公共机房6）"}],"weekCounts":{"1":8,"2":7,"3":8,"4":7,"5":9,"6":2,"7":11,"8":10,"9":11,"10":9,"11":10,"12":7,"13":8,"14":8,"15":10,"16":8,"17":8}};
+    const colors = ['#5de9ff','#70f5c4','#6aa8ff','#b99cff','#ffd36a','#ff91b0'];
+    let selectedWeek = Math.max(1, Math.min(17, Number(new URLSearchParams(location.search).get('week')) || 1));
+    const tabs = document.getElementById('weekTabs');
+    const grid = document.getElementById('grid');
+    const weekTitle = document.getElementById('weekTitle');
+    const weekHint = document.getElementById('weekHint');
+    const summary = document.getElementById('summary');
+    function activeCourses(day, period) { return DATA.schedule.filter(x => x.day === day && x.period === period && x.weeks.includes(selectedWeek)); }
+    function courseCard(item) {
+      const color = colors[(item.name.length + item.period) % colors.length];
+      const room = item.room || '教室未填写';
+      const details = `<small>第${selectedWeek}周 · ${item.sections}<br>${room}</small><span class="tag">${item.type}</span>`;
+      const more = item.name === '体育Ⅲ' && room.includes(' / ') ? `<details><summary>查看项目与场地</summary><small>${room.split(' / ').map((x, i) => `${i + 1}. ${x}`).join('<br>')}</small></details>` : '';
+      return `<article class="course" style="--course-color:${color}"><b>${item.name}</b>${details}${more}</article>`;
+    }
+    function renderTabs() {
+      tabs.innerHTML = Array.from({length:17}, (_, i) => { const week=i+1; return `<button class="week-tab ${week===selectedWeek?'active':''}" data-week="${week}">第${week}周<small>${DATA.weekCounts[String(week)]}项</small></button>`; }).join('');
+      tabs.querySelectorAll('.week-tab').forEach(btn => btn.addEventListener('click', () => selectWeek(Number(btn.dataset.week))));
+    }
+    function renderGrid() {
+      const count = DATA.weekCounts[String(selectedWeek)] || 0;
+      weekTitle.textContent = `第${selectedWeek}周课表`;
+      weekHint.textContent = count ? `本周共有 ${count} 个课程安排` : '本周暂无课程安排';
+      summary.innerHTML = `当前查看：<b>第${selectedWeek}周</b>　·　只显示本周课程`;
+      let html = '<div class="cell head">节次 / 星期</div>' + DATA.days.map(day => `<div class="cell head">${day}</div>`).join('');
+      DATA.periods.forEach((period, index) => {
+        html += `<div class="cell period"><strong>${period.name}</strong><span>${period.sections}</span></div>`;
+        DATA.days.forEach((_, day) => {
+          const courses = activeCourses(day, index + 1);
+          html += `<div class="cell">${courses.length ? courses.map(courseCard).join('') : '<div class="empty">—</div>'}</div>`;
+        });
+      });
+      grid.innerHTML = html;
+    }
+    function selectWeek(week) {
+      selectedWeek = Math.max(1, Math.min(17, week));
+      history.replaceState(null, '', `?week=${selectedWeek}`);
+      renderTabs(); renderGrid();
+    }
+    document.getElementById('prevWeek').addEventListener('click', () => selectWeek(selectedWeek - 1));
+    document.getElementById('nextWeek').addEventListener('click', () => selectWeek(selectedWeek + 1));
+    renderTabs(); renderGrid();
+  </script>
+</body>
+</html>
